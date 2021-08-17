@@ -1,8 +1,21 @@
+# Copyright 2019 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: balancereader
-  namespace: default
 spec:
   selector:
     matchLabels:
@@ -11,12 +24,12 @@ spec:
     metadata:
       labels:
         app: balancereader
-        org: cymbal-bank
     spec:
+      serviceAccountName: default
       terminationGracePeriodSeconds: 5
       containers:
       - name: balancereader
-        image: balancereader
+        image: gcr.io/bank-of-anthos/balancereader:v0.4.3
         volumeMounts:
         - name: publickey
           mountPath: "/root/.ssh"
@@ -73,22 +86,6 @@ spec:
           initialDelaySeconds: 120
           periodSeconds: 5
           timeoutSeconds: 10
-      - name: cloudsql-proxy
-        resources:
-          limits:
-            cpu: "200m"
-            memory: "100Mi"
-        image: gcr.io/cloudsql-docker/gce-proxy:1.19.0-alpine
-        env:
-        - name: CONNECTION_NAME
-          valueFrom:
-            secretKeyRef:
-              name: cloud-sql-admin
-              key: connectionName
-        command: ["/cloud_sql_proxy",
-                  "-instances=$(CONNECTION_NAME)=tcp:5432"]
-        securityContext:
-          runAsNonRoot: true
       volumes:
       - name: publickey
         secret:
@@ -101,9 +98,6 @@ apiVersion: v1
 kind: Service
 metadata:
   name: balancereader
-  namespace: default
-  labels:
-    org: cymbal-bank
 spec:
   type: ClusterIP
   selector:
