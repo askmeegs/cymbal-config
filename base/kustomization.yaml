@@ -10,7 +10,5 @@ resources:
 - ledger-db.yaml
 - ledgerwriter.yaml
 - loadgenerator.yaml
-- populate-accounts-db.yaml
-- populate-ledger-db.yaml
 - transactionhistory.yaml
 - userservice.yaml
