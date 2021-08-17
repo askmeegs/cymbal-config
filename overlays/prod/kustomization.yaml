@@ -10,6 +10,5 @@ patchesStrategicMerge:
 - transactionhistory.yaml
 - userservice.yaml
 - frontend.yaml
-- frontend-ingress.yaml
 commonLabels:
   environment: prod
