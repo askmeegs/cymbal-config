@@ -1,20 +1,157 @@
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: v1
+kind: Service
 metadata:
-  name: frontend
-  namespace: default 
+  name: rollout-frontend-stable
 spec:
   selector:
-    matchLabels:
-      app: frontend
-  replicas: 3
-  template: 
-    spec: 
+    app: frontend
+  ports:
+  - name: http
+    port: 80
+    targetPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rollout-frontend-canary
+spec:
+  selector:
+    app: frontend 
+  ports:
+  - name: http
+    port: 80
+    targetPort: 8080
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: Gateway
+metadata:
+  name: frontend-gateway
+spec:
+  selector:
+    istio: ingressgateway # use Istio default gateway implementation
+  servers:
+  - port:
+      number: 80
+      name: http
+      protocol: HTTP
+    hosts:
+    - "*"
+---
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: rollout-frontend-vsvc
+spec:
+  gateways:
+  - frontend-gateway
+  hosts:
+  - rollout-frontend.local
+  http:
+  - name: primary  # Should match spec.strategy.canary.trafficRouting.istio.virtualService.routes
+    route:
+    - destination:
+        host: rollout-frontend-stable  # Should match spec.strategy.canary.stableService\
+        port:
+          number: 80
+      weight: 100
+    - destination:
+        host: rollout-frontend-canary  # Should match spec.strategy.canary.canaryService
+        port:
+          number: 80
+      weight: 0
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: rollout-frontend
+spec:
+  strategy:
+    canary:
+      canaryService: rollout-frontend-canary
+      stableService: rollout-frontend-stable
+      trafficRouting:
+        istio:
+          virtualService:
+            name: rollout-frontend-vsvc
+            routes:
+            - primary # At least one route is required
+      steps:
+      - setWeight: 10
+      - pause: { duration: 20s }  
+      - setWeight: 20
+      - pause: { duration: 20s } 
+      - setWeight: 80
+      - pause: { duration: 20s } 
+      - setWeight: 100
+  selector:
+      matchLabels:
+        app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      serviceAccountName: default
+      terminationGracePeriodSeconds: 5
       containers:
       - name: front
-        image: gcr.io/bank-of-anthos/frontend:v0.4.3
+        image: gcr.io/bank-of-anthos/frontend:v0.5.0
+        volumeMounts:
+        - name: publickey
+          mountPath: "/root/.ssh"
+          readOnly: true
         env:
+        - name: VERSION
+          value: "v0.4.3"
+        - name: PORT
+          value: "8080"
         - name: ENABLE_TRACING
           value: "true"
+        - name: SCHEME
+          value: "http"
         - name: LOG_LEVEL
           value: "info"
+        - name: DEFAULT_USERNAME
+          valueFrom:
+            configMapKeyRef:
+              name: demo-data-config
+              key: DEMO_LOGIN_USERNAME
+        - name: DEFAULT_PASSWORD
+          valueFrom:
+            configMapKeyRef:
+              name: demo-data-config
+              key: DEMO_LOGIN_PASSWORD
+        envFrom:
+        - configMapRef:
+            name: environment-config
+        - configMapRef:
+            name: service-api-config
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /ready
+            port: 8080
+          initialDelaySeconds: 60
+          periodSeconds: 15
+          timeoutSeconds: 30
+        resources:
+          requests:
+            cpu: 100m
+            memory: 64Mi
+          limits:
+            cpu: 500m
+            memory: 256Mi
+      volumes:
+      - name: publickey
+        secret:
+          secretName: jwt-key
+          items:
+          - key: jwtRS256.key.pub
+            path: publickey
+---

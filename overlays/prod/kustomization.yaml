@@ -9,6 +9,7 @@ patchesStrategicMerge:
 - loadgenerator.yaml
 - transactionhistory.yaml
 - userservice.yaml
+resources:
 - frontend.yaml
 commonLabels:
   environment: prod
