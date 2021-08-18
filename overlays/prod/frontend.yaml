@@ -45,7 +45,7 @@ spec:
   gateways:
   - frontend-gateway
   hosts:
-  - frontend
+  - frontend.local
   http:
   - name: primary  # Should match spec.strategy.canary.trafficRouting.istio.virtualService.routes
     route:
@@ -154,4 +154,3 @@ spec:
           items:
           - key: jwtRS256.key.pub
             path: publickey
----
