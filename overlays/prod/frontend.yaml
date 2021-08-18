@@ -4,7 +4,7 @@ metadata:
   name: rollout-frontend-stable
 spec:
   selector:
-    app: frontend
+    app: rollout-frontend
   ports:
   - name: http
     port: 80
@@ -16,7 +16,7 @@ metadata:
   name: rollout-frontend-canary
 spec:
   selector:
-    app: frontend 
+    app: rollout-frontend 
   ports:
   - name: http
     port: 80
@@ -45,7 +45,7 @@ spec:
   gateways:
   - frontend-gateway
   hosts:
-  - rollout-frontend
+  - rollout-frontend.local
   http:
   - name: primary  # Should match spec.strategy.canary.trafficRouting.istio.virtualService.routes
     route:
@@ -81,11 +81,11 @@ spec:
       - setWeight: 100
   selector:
     matchLabels:
-      app: frontend
+      app: rollout-frontend
   template:
     metadata:
       labels:
-        app: frontend
+        app: rollout-frontend
     spec:
       serviceAccountName: default
       terminationGracePeriodSeconds: 5
