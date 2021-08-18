@@ -45,19 +45,15 @@ spec:
   gateways:
   - frontend-gateway
   hosts:
-  - frontend.local
+  - rollout-frontend
   http:
   - name: primary  # Should match spec.strategy.canary.trafficRouting.istio.virtualService.routes
     route:
     - destination:
         host: rollout-frontend-stable  # Should match spec.strategy.canary.stableService\
-        port:
-          number: 80
       weight: 100
     - destination:
         host: rollout-frontend-canary  # Should match spec.strategy.canary.canaryService
-        port:
-          number: 80
       weight: 0
 ---
 apiVersion: argoproj.io/v1alpha1
