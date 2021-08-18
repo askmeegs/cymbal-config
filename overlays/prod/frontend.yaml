@@ -45,7 +45,7 @@ spec:
   gateways:
   - frontend-gateway
   hosts:
-  - rollout-frontend.local
+  - "*"
   http:
   - name: primary  # Should match spec.strategy.canary.trafficRouting.istio.virtualService.routes
     route:
