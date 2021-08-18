@@ -84,8 +84,8 @@ spec:
       - pause: { duration: 20s } 
       - setWeight: 100
   selector:
-      matchLabels:
-        app: frontend
+    matchLabels:
+      app: frontend
   template:
     metadata:
       labels:
