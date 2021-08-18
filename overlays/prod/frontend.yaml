@@ -81,7 +81,7 @@ spec:
       - setWeight: 100
   selector:
     matchLabels:
-      app: rollout-frontend
+      app: frontend
   template:
     metadata:
       labels:
