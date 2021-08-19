@@ -11,6 +11,7 @@ spec:
     spec: 
       containers:
       - name: balancereader
+        image: balancereader
         env:
         - name: ENABLE_TRACING
           value: "false"

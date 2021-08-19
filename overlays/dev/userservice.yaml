@@ -11,6 +11,7 @@ spec:
     spec: 
       containers:
       - name: userservice
+        image: userservice
         env:
         - name: ENABLE_TRACING
           value: "false"

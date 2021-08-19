@@ -11,6 +11,7 @@ spec:
     spec: 
       containers:
       - name: ledgerwriter
+        image: ledgerwriter
         env:
         - name: ENABLE_TRACING
           value: "false"
