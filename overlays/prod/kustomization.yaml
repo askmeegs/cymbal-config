@@ -11,5 +11,3 @@ patchesStrategicMerge:
 - userservice.yaml
 resources:
 - frontend.yaml
-commonLabels:
-  environment: prod
