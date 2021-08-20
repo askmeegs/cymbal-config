@@ -91,7 +91,7 @@ spec:
       terminationGracePeriodSeconds: 5
       containers:
       - name: front
-        image: gcr.io/megan-streams/cymbal-bank/release/frontend:737f7e6
+        image: gcr.io/megan-streams/cymbal-bank/release/frontend:08ba3e2
         volumeMounts:
         - name: publickey
           mountPath: "/root/.ssh"
